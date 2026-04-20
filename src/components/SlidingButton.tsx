@@ -1,21 +1,30 @@
-import { Paper } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 
+// Component that takes a list of buttons and plays a sliding animation 
+// when a button is clicked
 const SlidingButton = ({
   defaultButton,
   buttons,
   overlayColorClasses,
   fontFamilyClasses,
+  onClick = () => {},
 }: {
   defaultButton: string;
   buttons: string[];
   overlayColorClasses: string;
   fontFamilyClasses?: string;
+  onClick: (button: string) => void;
 }) => {
-  /* USESTATE VARIABLES */
-  const [selectedTab, setSelectedTab] = useState<string>(defaultButton);
+  /* VARIABLES */
+
+  // String value of the button that has been selected
+  const [selectedButtonData, setSelectedButtonData] =
+    useState<string>(defaultButton);
+
+  // Selected HTML button element, allows the retrieval of the buttons properties
   const [selectedButton, setSelectedButton] =
     useState<HTMLButtonElement | null>(null);
+
   const [windowSize, setWindowSize] = useState<number>(0);
 
   /* REFS */
@@ -33,7 +42,7 @@ const SlidingButton = ({
       return;
     }
 
-    setSelectedTab(buttonLabel);
+    setSelectedButtonData(buttonLabel);
     setSelectedButton(event.currentTarget);
 
     const targetLocation = event.currentTarget.offsetLeft;
@@ -42,6 +51,8 @@ const SlidingButton = ({
   };
 
   /* USEEFFECT FUNCTIONS */
+
+  // Tracks the resizing of the window to ensure calculations don't become inaccurate
   useEffect(function trackWindowResize() {
     const handleResize = () => {
       setWindowSize(window.innerWidth);
@@ -49,6 +60,7 @@ const SlidingButton = ({
     window.addEventListener("resize", handleResize);
   });
 
+  // Handles the logic for when the window resizes
   useEffect(
     function handleWindowResize() {
       if (!buttonOverlayRef.current) {
@@ -72,19 +84,20 @@ const SlidingButton = ({
     [buttons.length, selectedButton, windowSize],
   );
 
+  /* MAIN COMPONENT */
   return (
-    <Paper
-      className="flex relative w-full p-0.5 bg-white rounded-full! z-20"
-      elevation={4}
-    >
+    <div className="flex relative w-full bg-white border border-slate-300 rounded-full z-20">
       <div
         className={`flex items-center flex-1 relative w-full rounded-full ${fontFamilyClasses}`}
       >
-        {buttons.map((button, index) => (
+        {buttons.map((button) => (
           <button
-            key={index}
-            className={`flex-1 py-1 px-3 rounded-full text-nowrap text-[0.75rem] sm:text-sm md:text-md lg:text-lg lg:text-[1.175rem] ${selectedTab === button ? "text-white text-shadow-2xs text-shadow-black" : "text-black"} cursor-pointer z-10`}
-            onClick={(e) => handleButtonClick(button, e)}
+            key={button}
+            className={`flex-1 py-1 px-4 rounded-full text-nowrap text-xs ${selectedButtonData === button ? "text-white" : "text-black"} cursor-pointer z-10`}
+            onClick={(e) => {
+              handleButtonClick(button, e);
+              onClick(button);
+            }}
           >
             {button}
           </button>
@@ -94,7 +107,7 @@ const SlidingButton = ({
           ref={buttonOverlayRef}
         ></div>
       </div>
-    </Paper>
+    </div>
   );
 };
 
